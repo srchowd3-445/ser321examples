@@ -232,15 +232,14 @@ class WebServer {
               builder.append("Content-Type: text/html; charset=utf-8\n");
               builder.append("\n");
               builder.append("Result is: " + result);
-              
-              
+
           }
           catch(Exception e)
           {
         	  builder.append("HTTP/1.1 400 Error: Bad Request\n");
               builder.append("Content-Type: text/html; charset=utf-8\n");
               builder.append("\n");
-              builder.append("Error: " + e);
+              builder.append("Error: " + e.getMessage() + " This may have occured due to incorrect placement of arguments");
           }
 
         } else if (request.contains("github?")) {
