@@ -202,20 +202,46 @@ class WebServer {
           query_pairs = splitQuery(request.replace("multiply?", ""));
 
           // extract required fields from parameters
-          Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-          Integer num2 = Integer.parseInt(query_pairs.get("num2"));
+          //Integer num1 = Integer.parseInt(query_pairs.get("num1"));
+          //Integer num2 = Integer.parseInt(query_pairs.get("num2"));
 
           // do math
-          Integer result = num1 * num2;
+          //Integer result = num1 * num2;
 
           // Generate response
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("Result is: " + result);
+         // builder.append("HTTP/1.1 200 OK\n");
+         // builder.append("Content-Type: text/html; charset=utf-8\n");
+          //builder.append("\n");
+          //builder.append("Result is: " + result);
 
           // TODO: Include error handling here with a correct error code and
           // a response that makes sense
+          try
+          {
+        	  Integer num1 = Integer.parseInt(query_pairs.get("num1"));
+              Integer num2 = Integer.parseInt(query_pairs.get("num2"));
+
+              // do math
+              Integer result = num1 * num2;
+              if(num1 == null || num2==null)
+              {
+            	  throw new Exception("Not Enough Arguments Provided");
+              }
+              // Generate response
+              builder.append("HTTP/1.1 200 OK\n");
+              builder.append("Content-Type: text/html; charset=utf-8\n");
+              builder.append("\n");
+              builder.append("Result is: " + result);
+              
+              
+          }
+          catch(Exception e)
+          {
+        	  builder.append("HTTP/1.1 400 Error: Bad Request\n");
+              builder.append("Content-Type: text/html; charset=utf-8\n");
+              builder.append("\n");
+              builder.append("Error: " + e);
+          }
 
         } else if (request.contains("github?")) {
           // pulls the query from the request and runs it with GitHub's REST API
