@@ -81,6 +81,7 @@ class WebServer {
     }
   };
 
+
   private Random random = new Random();
 
   /**
@@ -300,9 +301,117 @@ class WebServer {
               builder.append("Error. The repository could not be found.");
               return builder.toString().getBytes();
 	    }
-	     
 
-        } else {
+
+           }
+	    else if (request.contains("surprise")) {
+
+              Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+              // extract path parameters
+              query_pairs = splitQuery(request.replace("surprise?", ""));
+
+              if(!query_pairs.containsKey("sur1") || !query_pairs.containsKey("prise2"))
+		{
+		    builder.setLength(0);
+                    builder.append("HTTP/1.1 400 Error: Bad Request\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+		    builder.append("Error: Arguments entered have been formatted improperly. Two arguments required are sur1 and prise2");
+		    return builder.toString().getBytes();
+		}
+              String num1Str = query_pairs.get("sur1");
+              String num2Str = query_pairs.get("prise2");
+              if(!num1Str.equals("r") || !num2Str.equals("r"))
+              {
+                  //throw new Exception("Not Enough Arguments Provided");
+                  builder.setLength(0);
+                  builder.append("HTTP/1.1 400 Error: Bad Request\n");
+                  builder.append("Content-Type: text/html; charset=utf-8\n");
+                  builder.append("\n");
+                  builder.append("Error: This may have occured due to incorrect placement of argument. Hint, both arguments will be equal to 18th letter of the alphabet, twice.");
+                  return builder.toString().getBytes();
+              }
+	      File file = new File("www/test.html");
+              builder.append("HTTP/1.1 200 OK\n");
+              builder.append("Content-Type: text/html; charset=utf-8\n");
+	      builder.append("\n");
+              builder.append(new String(readFileInBytes(file))); 
+
+       }
+            else if (request.contains("rps")) {
+
+              Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+              // extract path parameters
+              query_pairs = splitQuery(request.replace("rps?", ""));
+
+              if(!query_pairs.containsKey("player1") || !query_pairs.containsKey("player2"))
+                {
+                    builder.setLength(0);
+                    builder.append("HTTP/1.1 400 Error: Bad Request\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append("Error: Arguments entered have been formatted improperly. Two arguments required are player1 and player2");
+                    return builder.toString().getBytes();
+                }
+              String num1Str = query_pairs.get("player1");
+              String num2Str = query_pairs.get("player2");
+	      if (!num1Str.equals("rock") && !num1Str.equals("paper") && !num1Str.equals("scissor")) {
+                    builder.setLength(0);
+                    builder.append("HTTP/1.1 400 Error: Bad Request\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append("Error: The first argument is not 'rock', 'paper', or 'scissor'");
+                    return builder.toString().getBytes();
+                 }
+
+	      if (!num2Str.equals("rock") && !num2Str.equals("paper") && !num2Str.equals("scissor")) {
+    		    builder.setLength(0);
+    		    builder.append("HTTP/1.1 400 Error: Bad Request\n");
+    		    builder.append("Content-Type: text/html; charset=utf-8\n");
+    		    builder.append("\n");
+    		    builder.append("Error: The second argument is not 'rock', 'paper', or 'scissor'");
+    		    return builder.toString().getBytes();
+		}
+	      if(num1Str.equals(num2Str))
+              {
+               builder.append("HTTP/1.1 200 OK\n");
+               builder.append("Content-Type: text/html; charset=utf-8\n");
+               builder.append("\n");
+               builder.append("Tie!");
+               return builder.toString().getBytes();
+	      }
+	      else if(num1Str.equals("rock") && num2Str.equals("scissor"))
+	      {
+	       builder.append("HTTP/1.1 200 OK\n");
+               builder.append("Content-Type: text/html; charset=utf-8\n");
+               builder.append("\n");
+               builder.append("Player 1 wins. Player 1: " + num1Str + " Player 2: " + num2Str);
+	       return builder.toString().getBytes();
+	      }
+	      else if(num1Str.equals("paper") && num2Str.equals("rock"))
+              {
+               builder.append("HTTP/1.1 200 OK\n");
+               builder.append("Content-Type: text/html; charset=utf-8\n");
+               builder.append("\n");
+               builder.append("Player 1 wins. Player 1: " + num1Str + " Player 2: " + num2Str);
+	       return builder.toString().getBytes();
+              }
+	      else if(num1Str.equals("scissor") && num2Str.equals("paper"))
+              {
+               builder.append("HTTP/1.1 200 OK\n");
+               builder.append("Content-Type: text/html; charset=utf-8\n");
+               builder.append("\n");
+               builder.append("Player 1 wins. Player 1: " + num1Str + " Player 2: " + num2Str);
+               return builder.toString().getBytes();
+	      }
+	      else{
+               builder.append("HTTP/1.1 200 OK\n");
+               builder.append("Content-Type: text/html; charset=utf-8\n");
+               builder.append("\n");
+               builder.append("Player 2 wins. Player 1: " + num1Str + " Player 2: " + num2Str);
+              }
+       }
+       else {
           // if the request is not recognized at all
 
           builder.append("HTTP/1.1 400 Bad Request\n");
