@@ -297,7 +297,7 @@ class WebServer {
 	      builder.append("HTTP/1.1 404 NOT FOUND\n");
               builder.append("Content-Type: text/html; charset=utf-8\n");
               builder.append("\n");
-              builder.append("The repository could not be found.");
+              builder.append("Error. The repository could not be found.");
               return builder.toString().getBytes();
 	    }
 	     
