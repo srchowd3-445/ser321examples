@@ -25,6 +25,9 @@ import java.util.Random;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.nio.charset.Charset;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.lang.*;
 
 class WebServer {
   public static void main(String args[]) {
@@ -194,53 +197,53 @@ class WebServer {
             builder.append("File not found: " + file);
           }
         } else if (request.contains("multiply?")) {
-          // This multiplies two numbers, there is NO error handling, so when
-          // wrong data is given this just crashes
 
-          Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-          // extract path parameters
-          query_pairs = splitQuery(request.replace("multiply?", ""));
+              Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+              // extract path parameters
+              query_pairs = splitQuery(request.replace("multiply?", ""));
 
-          // extract required fields from parameters
-          //Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-          //Integer num2 = Integer.parseInt(query_pairs.get("num2"));
-
-          // do math
-          //Integer result = num1 * num2;
-
-          // Generate response
-         // builder.append("HTTP/1.1 200 OK\n");
-         // builder.append("Content-Type: text/html; charset=utf-8\n");
-          //builder.append("\n");
-          //builder.append("Result is: " + result);
-
-          // TODO: Include error handling here with a correct error code and
-          // a response that makes sense
-          try
-          {
-        	  Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-              Integer num2 = Integer.parseInt(query_pairs.get("num2"));
-
-              // do math
-              Integer result = num1 * num2;
-              if(num1 == null || num2==null)
+              if(!query_pairs.containsKey("num1") || !query_pairs.containsKey("num2"))
+		{
+		    builder.setLength(0);
+                    builder.append("HTTP/1.1 400 Error: Bad Request\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+		    builder.append("Error: Arguments entered have been formatted improperly");
+		    return builder.toString().getBytes();
+		}
+              String num1Str = query_pairs.get("num1");
+              String num2Str = query_pairs.get("num2");
+              if(num1Str == null || num2Str == null)
               {
-            	  throw new Exception("Not Enough Arguments Provided");
+            	  //throw new Exception("Not Enough Arguments Provided");
+                  builder.setLength(0);
+                  builder.append("HTTP/1.1 400 Error: Bad Request\n");
+                  builder.append("Content-Type: text/html; charset=utf-8\n");
+                  builder.append("\n");
+                  builder.append("Error: This may have occured due to incorrect placement of arguments");
+		  return builder.toString().getBytes();
               }
               // Generate response
+	      Integer num1 = null;
+	      Integer num2 = null;
+	       try{
+		num1 = Integer.parseInt(num1Str);
+		num2 = Integer.parseInt(num2Str);
+		}
+		catch(NumberFormatException e)
+		{
+		builder.setLength(0);
+		builder.append("HTTP/1.1 400 Error: Bad Request\n");
+		builder.append("Content-Type: text/html; charset=utf-8\n");
+		builder.append("\n");
+		builder.append("Error: Arguments are not valid integers");
+		return builder.toString().getBytes();
+		}
+	      Integer result = num1*num2;
               builder.append("HTTP/1.1 200 OK\n");
               builder.append("Content-Type: text/html; charset=utf-8\n");
               builder.append("\n");
               builder.append("Result is: " + result);
-
-          }
-          catch(Exception e)
-          {
-        	  builder.append("HTTP/1.1 400 Error: Bad Request\n");
-              builder.append("Content-Type: text/html; charset=utf-8\n");
-              builder.append("\n");
-              builder.append("Error: " + e.getMessage() + " This may have occured due to incorrect placement of arguments");
-          }
 
         } else if (request.contains("github?")) {
           // pulls the query from the request and runs it with GitHub's REST API
@@ -250,31 +253,54 @@ class WebServer {
           //     then drill down to what you care about
           // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
           //     "/repos/OWNERNAME/REPONAME/contributors"
-	  try{
+//	  try{
 
           Map<String, String> query_pairs = new LinkedHashMap<String, String>();
           query_pairs = splitQuery(request.replace("github?", ""));
-          if(query_pairs.get("query") == null)
-          {
-                throw new Exception("Query empty. Nothing provided!");
-          }
-          String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
-          System.out.println(json);
+          //if(query_pairs.get("query") == null)
+          //{
+            //    throw new Exception("Query empty. Nothing provided!");
+          //}
+             String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
+	     String urlString = "https://api.github.com/" + query_pairs.get("query");
+	     URL url = new URL(urlString);
+	     HttpURLConnection con = (HttpURLConnection) url.openConnection();
+	     con.setRequestMethod("GET");
+	     int responseCode = con.getResponseCode();
 
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append(json);
-          // TODO: Parse the JSON returned by your fetch and create an appropriate
-          // response based on what the assignment document asks for
-	  }
-	  catch(Exception e)
-	{
-	      builder.append("HTTP/1.1 400 Error: Bad Request\n");
+	   if(responseCode == HttpURLConnection.HTTP_OK)
+	   {
+             JSONArray array = new JSONArray(json);
+             JSONArray resultArray = new JSONArray();
+             for(int i = 0; i < array.length(); i++)
+              {
+                JSONObject obj = array.getJSONObject(i);
+                String fullname = obj.getString("full_name");
+                int id = obj.getInt("id");
+                String login = obj.getJSONObject("owner").getString("login");
+
+                JSONObject resultObj = new JSONObject();
+                resultObj.put("fullname", fullname);
+                resultObj.put("id", id);
+                resultObj.put("login", login);
+
+                resultArray.put(resultObj);
+              }
+              String resultJson = resultArray.toString();
+              builder.append("HTTP/1.1 200 OK\n");
               builder.append("Content-Type: text/html; charset=utf-8\n");
-	      builder.append("\n");
-	      builder.append("Query failed. Please, try again");
-	}
+              builder.append("\n");
+              builder.append(resultJson);
+	    }
+	    else if(responseCode == HttpURLConnection.HTTP_NOT_FOUND)
+	    {
+	      builder.append("HTTP/1.1 404 NOT FOUND\n");
+              builder.append("Content-Type: text/html; charset=utf-8\n");
+              builder.append("\n");
+              builder.append("The repository could not be found.");
+              return builder.toString().getBytes();
+	    }
+	     
 
         } else {
           // if the request is not recognized at all
@@ -309,6 +335,10 @@ class WebServer {
     // ["q=hello+world%2Fme", "bob=5"]
     for (String pair : pairs) {
       int idx = pair.indexOf("=");
+      if(idx == -1)
+      {
+	return query_pairs;
+      }
       query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
           URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
     }
