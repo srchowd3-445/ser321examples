@@ -209,7 +209,7 @@ class WebServer {
                     builder.append("HTTP/1.1 400 Error: Bad Request\n");
                     builder.append("Content-Type: text/html; charset=utf-8\n");
                     builder.append("\n");
-		    builder.append("Error: Arguments entered have been formatted improperly");
+		    builder.append("Error: Arguments entered have been formatted improperly. Ensure num1 and num2 are written");
 		    return builder.toString().getBytes();
 		}
               String num1Str = query_pairs.get("num1");
@@ -298,7 +298,7 @@ class WebServer {
 	      builder.append("HTTP/1.1 404 NOT FOUND\n");
               builder.append("Content-Type: text/html; charset=utf-8\n");
               builder.append("\n");
-              builder.append("Error. The repository could not be found.");
+              builder.append("Error. The repository could not be found. Please format the link to the repository accordingly ");
               return builder.toString().getBytes();
 	    }
 
